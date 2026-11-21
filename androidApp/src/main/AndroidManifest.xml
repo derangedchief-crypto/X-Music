@@ -81,6 +81,10 @@
         <meta-data
             android:name="io.sentry.auto-init"
             android:value="false" />
+        <!-- Initialization belongs to the opt-in manager, never a startup provider. -->
+        <provider
+            android:name="io.sentry.android.core.SentryInitProvider"
+            tools:node="remove" />
         <meta-data
             android:name="com.google.android.gms.car.application"
             android:resource="@xml/automotive_app_desc" />
