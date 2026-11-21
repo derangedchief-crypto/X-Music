@@ -50,6 +50,21 @@ required by GPL-3.0 when distributing binaries.
 This is an access gate on the shipped client, not a server-side music license or
 tamper-proof DRM. Modified clients can remove a client-side gate.
 
+## Branding and diagnostics
+
+The activation screen calls the customer's six-digit code **Activation Code**.
+The subsequent **Connect YouTube Music** action is optional and connects a
+YouTube account; it does not create an X-Music account. The activation background
+uses bundled album artwork so it remains visible without an artwork network request.
+The vector master is `assets/xmusic/xmusic-logo.svg`; render the raster icon
+variants with `scripts/render_xmusic_logo.py` and Pillow.
+
+Android diagnostics use the `x-music` project in the `extreme-us` Sentry
+organization, separate from the Hub's `android` project. Reporting remains opt-in
+and uses the existing redaction pipeline. Debug builds report to the `test`
+environment and release builds to `production`. Symbol uploads require that
+organization's `SENTRY_AUTH_TOKEN`; no upload token is bundled in the APK.
+
 ## Device verification
 
 - Fresh install: code screen appears before onboarding or music navigation.

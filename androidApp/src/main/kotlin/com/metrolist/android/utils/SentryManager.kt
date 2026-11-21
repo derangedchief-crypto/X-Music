@@ -22,8 +22,9 @@ import io.sentry.SentryOptions
 import io.sentry.android.core.SentryAndroid
 import io.sentry.logger.SentryLogParameters
 import io.sentry.protocol.Request
+import com.metrolist.android.BuildConfig as AndroidBuildConfig
 
-internal fun androidSentryRelease(version: String): String = "com.metrolist.music.kmp@$version"
+internal fun androidSentryRelease(version: String): String = "net.extremeiptv.xmusic@$version"
 
 object SentryManager {
     private lateinit var application: Application
@@ -53,13 +54,13 @@ object SentryManager {
         if (Sentry.isEnabled()) return
 
         SentryAndroid.init(application) { options ->
-            options.dsn = "https://fe4474514a54a507252b26c60e229016@o4511744603193344.ingest.de.sentry.io/4511744608436304"
+            options.dsn = "https://929c43bffa3bf62359514417fa2aaddb@o4512068664885248.ingest.us.sentry.io/4512470682042368"
             options.release = androidSentryRelease(BuildConfig.APP_VERSION)
             BuildConfig.SOURCE_REVISION.takeIf(String::isNotBlank)?.let { options.setTag("source_revision", it) }
             options.sampleRate = 1.0
             options.tracesSampleRate = 0.0
             options.isDebug = false
-            options.environment = "production"
+            options.environment = if (AndroidBuildConfig.DEBUG) "test" else "production"
             options.isAttachServerName = false
             options.isEnableUncaughtExceptionHandler = true
             options.isEnableAutoSessionTracking = true

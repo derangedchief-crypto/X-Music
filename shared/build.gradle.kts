@@ -498,6 +498,21 @@ val prepareComposeResourceAliases =
     tasks.register<Sync>("prepareComposeResourceAliases") {
         val catalog = layout.projectDirectory.dir("src/commonMain/composeResources")
         from(catalog)
+        // Brand generated catalogs without rewriting translator-maintained source files or upstream credits.
+        filesMatching("**/strings.xml") {
+            filter { line: String ->
+                if (Regex(
+                        "name=\"(credits_[^\"]*|account_menu_license|support_prompt_message|onboarding_migration_description)\"",
+                    ).containsMatchIn(line)
+                ) {
+                    line
+                } else {
+                    line.replace(Regex("(?<=>)(.*)(?=</string>)")) { match ->
+                        match.value.replace("Metrolist-KMP", "X-Music").replace("Metrolist", "X-Music")
+                    }
+                }
+            }
+        }
         mapOf("in" to "id", "iw" to "he").forEach { (legacy, modern) ->
             from(catalog.dir("values-$legacy")) { into("values-$modern") }
         }

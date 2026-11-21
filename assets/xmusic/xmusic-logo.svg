@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 108 108">
+  <defs><linearGradient id="brand" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#40E3EF"/><stop offset="1" stop-color="#A778FF"/></linearGradient></defs>
+  <rect width="108" height="108" rx="24" fill="#090D17"/>
+  <path d="M25 24H40L83 84H68ZM68 24H83L62 53L54 42ZM46 55L54 66L40 84H25Z" fill="url(#brand)"/>
+</svg>

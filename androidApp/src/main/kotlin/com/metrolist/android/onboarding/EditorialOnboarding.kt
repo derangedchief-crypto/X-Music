@@ -31,7 +31,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
@@ -42,13 +41,14 @@ import com.metrolist.android.ui.component.Material3SettingsGroup
 import com.metrolist.android.ui.component.Material3SettingsItem
 import com.metrolist.shared.api.lastfm.LastFM
 import com.metrolist.shared.generated.resources.Res
-import com.metrolist.shared.generated.resources.action_login
 import com.metrolist.shared.generated.resources.migrated
 import com.metrolist.shared.generated.resources.onboarding_account_picture
 import com.metrolist.shared.generated.resources.onboarding_no_saved_accounts
 import com.metrolist.shared.generated.resources.onboarding_restore_backup
 import com.metrolist.shared.generated.resources.onboarding_settings_hint
 import com.metrolist.shared.generated.resources.ready_to_migrate
+import com.metrolist.shared.generated.resources.xmusic_youtube_login
+import com.metrolist.shared.generated.resources.xmusic_youtube_optional
 import com.metrolist.shared.settings.Settings
 import com.metrolist.shared.state.GlobalYouTube
 import com.metrolist.shared.state.GlobalYouTubeRepository
@@ -88,14 +88,8 @@ internal fun OnboardingContent(
                 Modifier
             },
         welcomeContent = { modifier ->
-            val iconRes =
-                if (MaterialTheme.colorScheme.background.luminance() < 0.5f) {
-                    R.drawable.app_icon_zenith_white_foreground
-                } else {
-                    R.drawable.app_icon_zenith_black_foreground
-                }
             Image(
-                painter = painterResource(iconRes),
+                painter = painterResource(R.drawable.xmusic_logo),
                 contentDescription = null,
                 modifier = modifier,
             )
@@ -147,13 +141,17 @@ private fun FinishActions(
         modifier = Modifier.fillMaxWidth().padding(top = 32.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        Text(
+            stringResource(Res.string.xmusic_youtube_optional),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         FilledTonalButton(
             onClick = onLogin,
             modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp),
             shapes = ButtonDefaults.shapes(),
         ) {
             Icon(MetrolistIcons.AutoMirrored.Filled.Login, contentDescription = null)
-            Text(stringResource(Res.string.action_login), modifier = Modifier.padding(start = 10.dp))
+            Text(stringResource(Res.string.xmusic_youtube_login), modifier = Modifier.padding(start = 10.dp))
         }
         OutlinedButton(
             onClick = onRestore,

@@ -86,13 +86,26 @@ abstract class GenerateAndroidStringsTask : DefaultTask() {
         output.deleteRecursively()
         val transformer = TransformerFactory.newInstance().newTransformer()
 
-        fun escapeAndroidText(node: Node) {
+        fun escapeAndroidText(
+            node: Node,
+            preserveAttribution: Boolean = false,
+        ) {
             if (node.nodeType == Node.TEXT_NODE || node.nodeType == Node.CDATA_SECTION_NODE) {
                 // Android resources drop bare quotes; the shared catalogs store plain ' and " for Compose.
-                node.nodeValue = node.nodeValue.replace("'", "\\u0027").replace("\"", "\\u0022")
+                val text =
+                    if (preserveAttribution) {
+                        node.nodeValue
+                    } else {
+                        node.nodeValue
+                            .replace(
+                                "Metrolist-KMP",
+                                "X-Music",
+                            ).replace("Metrolist", "X-Music")
+                    }
+                node.nodeValue = text.replace("'", "\\u0027").replace("\"", "\\u0022")
             }
             for (index in 0 until node.childNodes.length) {
-                escapeAndroidText(node.childNodes.item(index))
+                escapeAndroidText(node.childNodes.item(index), preserveAttribution)
             }
         }
         catalogs.forEach { (qualifier, root) ->
@@ -101,7 +114,12 @@ abstract class GenerateAndroidStringsTask : DefaultTask() {
             document.appendChild(resources)
             entries(root).filter { key(it) in required }.forEach {
                 val entry = document.importNode(it, true)
-                escapeAndroidText(entry)
+                val name = it.getAttribute("name")
+                escapeAndroidText(
+                    entry,
+                    name.startsWith("credits_") ||
+                        name in setOf("account_menu_license", "support_prompt_message", "onboarding_migration_description"),
+                )
                 resources.appendChild(entry)
             }
             val destination = File(output, "$qualifier/strings.xml")
@@ -242,8 +260,8 @@ sentry {
     }
     ignoredBuildTypes.set(setOf("debug", "benchmark", "izzy"))
     tracingInstrumentation.enabled.set(false)
-    org.set("metrolistgroup")
-    projectName.set("metrolist-kmp")
+    org.set("extreme-us")
+    projectName.set("x-music")
     authToken.set(sentryAuthToken)
 }
 
@@ -486,7 +504,7 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.splashscreen)
 
-    releaseImplementation(libs.sentry.android.ndk)
+    implementation(libs.sentry.android.ndk)
 
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.junit4)

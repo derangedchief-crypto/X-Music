@@ -19,16 +19,17 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.metrolist.android.App
 import com.metrolist.android.BuildConfig
 import com.metrolist.android.LocalMiniPlayerBottomInset
+import com.metrolist.android.R
 import com.metrolist.android.playback.LocalPlayerConnection
 import com.metrolist.android.playback.resolveIncomingPlaybackSong
 import com.metrolist.shared.discord.openDiscordUrl
 import com.metrolist.shared.generated.resources.Res
 import com.metrolist.shared.generated.resources.app_name
-import com.metrolist.shared.generated.resources.logo
 import com.metrolist.shared.generated.resources.xmusic_access_sign_out
 import com.metrolist.shared.generated.resources.youtube_music
 import com.metrolist.shared.state.GlobalYouTubeRepository
@@ -36,7 +37,6 @@ import com.metrolist.shared.ui.screens.AboutCommunityLinkKind
 import com.metrolist.shared.ui.screens.AboutScreen
 import com.metrolist.shared.ui.settings.LocalSettingsPageHasTopBar
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -54,7 +54,7 @@ fun AndroidAboutScreen(
     Column(Modifier.fillMaxSize()) {
         Box(Modifier.weight(1f)) {
             AboutScreen(
-                logo = painterResource(Res.drawable.logo),
+                logo = painterResource(R.drawable.xmusic_logo),
                 appName = stringResource(Res.string.app_name),
                 version = BuildConfig.VERSION_NAME,
                 isDebug = BuildConfig.DEBUG,

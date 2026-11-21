@@ -28,6 +28,11 @@ Crash UI and report/export labels intentionally use English. Set `translatable="
 
 Imported catalogs retain source headers and the [attribution notice](translation-attribution.md). Builds read shared catalogs directly; there is no upstream translation-import step.
 
+X-Music brands the generated Android and Compose UI catalogs during the build,
+replacing the Metrolist display name without editing translator-maintained locale
+files. Compose keeps upstream contributor, license, support and legacy migration
+attribution. Source namespaces and resource keys remain compatible with upstream.
+
 ## Pruning
 
 `python3 scripts/find_unused_strings.py` reports unreferenced base keys. `--apply` removes them from `values/strings.xml` only, without rewriting remaining bytes, and leaves locale catalogs to Weblate. Literal mentions protect keys; dynamic literal prefixes protect matching families. Review the result before staging. The script never changes source code.

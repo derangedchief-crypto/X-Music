@@ -7,18 +7,22 @@
 
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="xmusic_name" translatable="false">X-Music</string>
-    <string name="xmusic_access_intro">Sign in with your six-digit Hub access code. An active Hub subscription is required.</string>
-    <string name="xmusic_access_code">Hub access code</string>
+    <string name="xmusic_access_intro">Enter your six-digit Activation Code to start listening. An active subscription is required.</string>
+    <string name="xmusic_access_code">Activation Code</string>
     <string name="xmusic_access_checking">Checking your subscription…</string>
-    <string name="xmusic_access_invalid">Your code is invalid or your Hub subscription is inactive. Please contact your provider.</string>
+    <string name="xmusic_access_invalid">Your Activation Code is invalid or your subscription is inactive. Please contact your provider.</string>
     <string name="xmusic_access_unavailable">Unable to verify your subscription. Check your connection and try again.</string>
-    <string name="xmusic_access_sign_in">Sign in</string>
+    <string name="xmusic_access_sign_in">Activate X-Music</string>
     <string name="xmusic_access_retry">Check again</string>
-    <string name="xmusic_access_change">Use a different Hub code</string>
+    <string name="xmusic_access_change">Use a different Activation Code</string>
+    <string name="xmusic_youtube_login">Connect YouTube Music</string>
+    <string name="xmusic_youtube_optional">Optional: connect your YouTube Music account for your playlists and account features. Your Activation Code already unlocks X-Music; no separate X-Music account is needed.</string>
+    <string name="xmusic_diagnostics_details">How diagnostics work</string>
+    <string name="xmusic_diagnostics_notice">If you enable diagnostics, X-Music sends crash reports, app errors and playback diagnostics to the X-Music project in Extreme’s Sentry account. Reports can include device and app details, stack traces and track information. Credentials are redacted before sending. Activation Codes are used only to verify your subscription and are not included in diagnostics. You can turn reporting off in Settings → Privacy.</string>
     <string name="xmusic_access_sign_out">Sign out of X-Music</string>
     <!-- Bottom navigation -->
     <!-- Translators: Label for app name in the multiple app screens. -->
-    <string name="app_name" translatable="false">Metrolist</string>
+    <string name="app_name" translatable="false">X-Music</string>
     <string name="account_menu_license" translatable="false">GPL-3.0 MetrolistGroup</string>
     <!-- Translators: Apple mobile platform name displayed in application information. -->
     <!-- Translators: Navigation label for home in the multiple app screens. -->
