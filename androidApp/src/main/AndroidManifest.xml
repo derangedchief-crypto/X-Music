@@ -77,6 +77,10 @@
         android:networkSecurityConfig="@xml/network_security_config"
         tools:targetApi="tiramisu"
         android:theme="@style/Theme.Metrolist.Starting">
+        <!-- SentryManager supplies the DSN only after the user opts in. -->
+        <meta-data
+            android:name="io.sentry.auto-init"
+            android:value="false" />
         <meta-data
             android:name="com.google.android.gms.car.application"
             android:resource="@xml/automotive_app_desc" />
