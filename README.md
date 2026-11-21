@@ -1,3 +1,12 @@
+# X-Music
+
+Android music app based on Metrolist, with existing Hub customer access-code
+login. See [X-Music integration notes](docs/x-music.md) for authentication,
+building and verification. The original project documentation follows; its
+download links refer to upstream Metrolist, not X-Music.
+
+---
+
 <div style="display: flex; gap: 1rem;">
   <img src="fastlane/metadata/android/en-US/images/icon.png" alt="Metrolist app icon" width="200" height="200" />
   <div>

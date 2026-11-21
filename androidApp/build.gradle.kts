@@ -261,7 +261,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.metrolist.music"
+        applicationId = "net.extremeiptv.xmusic"
         minSdk = 24
         targetSdk = 37
         versionCode = 155
@@ -271,7 +271,7 @@ android {
         vectorDrawables.useSupportLibrary = true
 
         buildConfigField("Long", "DISCORD_APP_ID", "1447278780795064401L")
-        buildConfigField("Boolean", "UPDATER_ENABLED", "true")
+        buildConfigField("Boolean", "UPDATER_ENABLED", "false")
         buildConfigField("String", "BUNDLED_LANGUAGE_TAGS", "\"${bundledLanguageTags.joinToString(",")}\"")
     }
 
@@ -303,7 +303,7 @@ android {
             isShrinkResources = true
             ndk.debugSymbolLevel = "FULL"
             optimization.keepRules { ignoreFrom("com.materialkolor:material-kolor-android:5.0.1") }
-            manifestPlaceholders["appLabel"] = "Metrolist"
+            manifestPlaceholders["appLabel"] = "X-Music"
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
@@ -326,7 +326,7 @@ android {
         }
         debug {
             applicationIdSuffix = ".debug"
-            manifestPlaceholders["appLabel"] = "Metrolist KMP Debug"
+            manifestPlaceholders["appLabel"] = "X-Music Debug"
         }
     }
 

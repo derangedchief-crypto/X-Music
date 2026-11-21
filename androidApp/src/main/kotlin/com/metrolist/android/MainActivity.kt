@@ -27,6 +27,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,6 +48,7 @@ import androidx.core.view.WindowCompat
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
+import com.metrolist.android.access.HubAccessScreen
 import com.metrolist.android.deviceconnect.AndroidDeviceConnect
 import com.metrolist.android.listentogether.AndroidListenTogetherManager
 import com.metrolist.android.locale.AppLocale
@@ -168,6 +171,13 @@ class MainActivity : ComponentActivity() {
         recovery.run { initializeActivity(savedInstanceState) }
     }
 
+    override fun onStart() {
+        super.onStart()
+        lifecycleScope.launch {
+            if (awaitStartup()) (application as App).hubAccess.refresh()
+        }
+    }
+
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus) showStartupRecovery()
@@ -225,14 +235,13 @@ class MainActivity : ComponentActivity() {
                     return@run
                 }
                 consumeDiscordCallback(intent)
-                app.restoreDeviceConnectIfEnabled()
-                prepareIncomingPlayback()
                 showContent()
             }
         }
     }
 
     private fun prepareIncomingPlayback() {
+        if (!(application as App).hubAccess.isAllowed()) return
         if (!(application as App).onboardingManager.isComplete) return
         val destination = incomingIntentState.value?.toIncomingDestination() as? IncomingDestination.PlayVideo ?: return
         GlobalYouTube.applyContentRegion(
@@ -307,9 +316,21 @@ class MainActivity : ComponentActivity() {
                 LocalDensity provides density,
             ) {
                 val app = application as App
+                val hubState by app.hubAccess.state.collectAsState()
+                LaunchedEffect(hubState.allowed) {
+                    if (hubState.allowed) {
+                        app.restoreDeviceConnectIfEnabled()
+                        prepareIncomingPlayback()
+                    } else {
+                        incomingPlaybackSong?.cancel()
+                        incomingPlaybackSong = null
+                    }
+                }
                 var onboardingComplete by remember { mutableStateOf(app.onboardingManager.isComplete) }
                 Box(Modifier.fillMaxSize().onGloballyPositioned { startupPresentation.contentLaidOut = true }) {
-                    if (onboardingComplete) {
+                    if (!hubState.allowed) {
+                        MetrolistTheme { HubAccessScreen(hubState, app.hubAccess) }
+                    } else if (onboardingComplete) {
                         MetrolistApp(
                             navigationSaveKey = navigationRestoration.saveKey,
                             incomingIntent = incomingIntentState.value,

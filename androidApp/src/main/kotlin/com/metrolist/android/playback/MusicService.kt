@@ -395,7 +395,7 @@ class MusicService :
     }
 
     override fun onBind(intent: Intent?): IBinder? =
-        if (!::player.isInitialized) {
+        if (!::player.isInitialized || !(application as App).hubAccess.isAllowed()) {
             null
         } else if (intent?.getBooleanExtra("internal_bind", false) == true) {
             binder
@@ -403,11 +403,12 @@ class MusicService :
             super.onBind(intent)
         }
 
-    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? = mediaSession
+    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? =
+        mediaSession.takeIf { (application as App).hubAccess.isAllowed() }
 
     override fun onCreate() {
         super.onCreate()
-        if (!(application as App).infrastructureReady) {
+        if (!(application as App).infrastructureReady || !(application as App).hubAccess.isAllowed()) {
             stopSelf()
             return
         }
@@ -447,6 +448,7 @@ class MusicService :
             ExoPlaybackPlayer(
                 this,
                 onPlaybackCommand = ::onPlaybackCommand,
+                playbackAllowed = (application as App).hubAccess::isAllowed,
                 isVideoTransitionPending = { ::videoMode.isInitialized && videoMode.isVideoModeResolving.value },
                 isCasting = { castManager.state.value.isConnected },
                 sabrPlaybackCache = audioCacheManager.sabrPlaybackCache,
@@ -588,6 +590,20 @@ class MusicService :
         running.value = true
         observeServiceLifetime()
         observeListenTogetherForegroundDemand()
+        serviceScope.launch {
+            (application as App).hubAccess.state.collect { access ->
+                if (!access.allowed) {
+                    player.stop()
+                    try {
+                        if (castManager.state.value.isConnected) castManager.stop()
+                    } finally {
+                        isRunning = false
+                        running.value = false
+                        pauseAllPlayersAndStopSelf()
+                    }
+                }
+            }
+        }
         Timber.tag(TAG).d("MusicService created backend=Media3")
     }
 
@@ -2311,7 +2327,7 @@ class MusicService :
                 return START_NOT_STICKY
             }
         }
-        if (!::player.isInitialized) {
+        if (!::player.isInitialized || !(application as App).hubAccess.isAllowed()) {
             if (foregroundStart) ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
             stopSelf(startId)
             return START_NOT_STICKY
@@ -2829,6 +2845,7 @@ class MusicService :
         wantVideo: Boolean = song.isVideoSong,
     ): PlaybackFetchResult =
         withContext(Dispatchers.IO) {
+            if (!(application as App).hubAccess.isAllowed()) return@withContext PlaybackFetchResult()
             val connected = PlaybackNetworkStateStore.current.connected
             cachedAudioResource(wantVideo && connected) { audioCacheManager.getCachedPlaybackResource(song) }
                 ?.let { return@withContext PlaybackFetchResult(resource = it) }
@@ -3111,6 +3128,7 @@ class MusicService :
             session: MediaSession,
             controller: MediaSession.ControllerInfo,
         ): MediaSession.ConnectionResult {
+            if (!(application as App).hubAccess.isAllowed()) return MediaSession.ConnectionResult.reject()
             Timber.tag(TAG).d(
                 "Media controller connected trusted=%s version=%d",
                 controller.isTrusted,
@@ -3182,6 +3200,7 @@ class MusicService :
             controller: MediaSession.ControllerInfo,
             playerCommand: Int,
         ): Int {
+            if (!(application as App).hubAccess.isAllowed()) return SessionError.ERROR_PERMISSION_DENIED
             if (AndroidListenTogetherManager.isGuestPlaybackLocked && isGuestRestrictedPlayerCommand(playerCommand)) {
                 return SessionError.ERROR_PERMISSION_DENIED
             }

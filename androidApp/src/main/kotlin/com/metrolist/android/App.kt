@@ -22,6 +22,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.edit
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
+import com.metrolist.android.access.HubAccess
 import com.metrolist.android.backup.BackupRestoreManager
 import com.metrolist.android.deviceconnect.AndroidDeviceConnect
 import com.metrolist.android.di.appModule
@@ -104,6 +105,7 @@ class App :
         private set
 
     val playbackNetworkMonitor by lazy { GlobalPlaybackNetworkMonitor(this) }
+    internal val hubAccess by lazy { HubAccess(this) }
 
     lateinit var onboardingManager: OnboardingManager
         private set
@@ -190,6 +192,7 @@ class App :
                     start = {
                         initializeApp(appStart)
                         infrastructureReady = true
+                        hubAccess.start()
                         withContext(Dispatchers.IO) {
                             Snapshot.withMutableSnapshot { SongLikeState.initialize() }
                             AuthManager().restorePersistedSession()

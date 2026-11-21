@@ -6,6 +6,16 @@
 <!-- "InnerTune" is replaced with "Metrolist" -->
 
 <resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="xmusic_name" translatable="false">X-Music</string>
+    <string name="xmusic_access_intro">Sign in with your six-digit Hub access code. An active Hub subscription is required.</string>
+    <string name="xmusic_access_code">Hub access code</string>
+    <string name="xmusic_access_checking">Checking your subscription…</string>
+    <string name="xmusic_access_invalid">Your code is invalid or your Hub subscription is inactive. Please contact your provider.</string>
+    <string name="xmusic_access_unavailable">Unable to verify your subscription. Check your connection and try again.</string>
+    <string name="xmusic_access_sign_in">Sign in</string>
+    <string name="xmusic_access_retry">Check again</string>
+    <string name="xmusic_access_change">Use a different Hub code</string>
+    <string name="xmusic_access_sign_out">Sign out of X-Music</string>
     <!-- Bottom navigation -->
     <!-- Translators: Label for app name in the multiple app screens. -->
     <string name="app_name" translatable="false">Metrolist</string>

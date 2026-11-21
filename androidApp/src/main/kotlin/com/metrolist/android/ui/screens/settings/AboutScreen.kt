@@ -5,12 +5,22 @@
 
 package com.metrolist.android.ui.screens.settings
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
+import com.metrolist.android.App
 import com.metrolist.android.BuildConfig
 import com.metrolist.android.LocalMiniPlayerBottomInset
 import com.metrolist.android.playback.LocalPlayerConnection
@@ -19,6 +29,7 @@ import com.metrolist.shared.discord.openDiscordUrl
 import com.metrolist.shared.generated.resources.Res
 import com.metrolist.shared.generated.resources.app_name
 import com.metrolist.shared.generated.resources.logo
+import com.metrolist.shared.generated.resources.xmusic_access_sign_out
 import com.metrolist.shared.generated.resources.youtube_music
 import com.metrolist.shared.state.GlobalYouTubeRepository
 import com.metrolist.shared.ui.screens.AboutCommunityLinkKind
@@ -40,36 +51,46 @@ fun AndroidAboutScreen(
     val coroutineScope = rememberCoroutineScope()
     val youtubeMusicLabel = stringResource(Res.string.youtube_music)
 
-    AboutScreen(
-        logo = painterResource(Res.drawable.logo),
-        appName = stringResource(Res.string.app_name),
-        version = BuildConfig.VERSION_NAME,
-        isDebug = BuildConfig.DEBUG,
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 24.dp),
-        bottomInset = miniPlayerInset,
-        onNavigateBack = onNavigateBack.takeUnless { LocalSettingsPageHasTopBar.current },
-        onOpenCommunityLink = { link ->
-            if (link.kind == AboutCommunityLinkKind.DISCORD) {
-                runCatching { context.openDiscordUrl(link.url) }
-            } else {
-                runCatching { uriHandler.openUri(link.url) }
-            }
-        },
-        onDevtoolsUnlocked = onDevtoolsUnlocked,
-        onPlayFavoriteSong =
-            playerConnection?.let { connection ->
-                { videoId ->
-                    coroutineScope.launch {
-                        val song =
-                            resolveIncomingPlaybackSong(
-                                videoId = videoId,
-                                fallbackArtist = youtubeMusicLabel,
-                                loadMetadata = GlobalYouTubeRepository.instance::getSongMetadata,
-                                loadPlayerInformation = GlobalYouTubeRepository.instance::getSongPlayerInformation,
-                            )
-                        connection.playSong(song, "")
+    Column(Modifier.fillMaxSize()) {
+        Box(Modifier.weight(1f)) {
+            AboutScreen(
+                logo = painterResource(Res.drawable.logo),
+                appName = stringResource(Res.string.app_name),
+                version = BuildConfig.VERSION_NAME,
+                isDebug = BuildConfig.DEBUG,
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 24.dp),
+                bottomInset = 0.dp,
+                onNavigateBack = onNavigateBack.takeUnless { LocalSettingsPageHasTopBar.current },
+                onOpenCommunityLink = { link ->
+                    if (link.kind == AboutCommunityLinkKind.DISCORD) {
+                        runCatching { context.openDiscordUrl(link.url) }
+                    } else {
+                        runCatching { uriHandler.openUri(link.url) }
                     }
-                }
-            },
-    )
+                },
+                onDevtoolsUnlocked = onDevtoolsUnlocked,
+                onPlayFavoriteSong =
+                    playerConnection?.let { connection ->
+                        { videoId ->
+                            coroutineScope.launch {
+                                val song =
+                                    resolveIncomingPlaybackSong(
+                                        videoId = videoId,
+                                        fallbackArtist = youtubeMusicLabel,
+                                        loadMetadata = GlobalYouTubeRepository.instance::getSongMetadata,
+                                        loadPlayerInformation = GlobalYouTubeRepository.instance::getSongPlayerInformation,
+                                    )
+                                connection.playSong(song, "")
+                            }
+                        }
+                    },
+            )
+        }
+        TextButton(
+            onClick = { (context.applicationContext as App).hubAccess.signOut() },
+            modifier = Modifier.fillMaxWidth().padding(bottom = miniPlayerInset).navigationBarsPadding(),
+        ) {
+            Text(stringResource(Res.string.xmusic_access_sign_out))
+        }
+    }
 }

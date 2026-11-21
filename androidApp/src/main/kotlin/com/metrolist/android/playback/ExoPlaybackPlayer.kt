@@ -377,6 +377,7 @@ internal fun shouldRecoverPlaybackAfterScreenOffFocusLoss(
 class ExoPlaybackPlayer(
     context: Context,
     private val onPlaybackCommand: () -> Unit = {},
+    private val playbackAllowed: () -> Boolean = { true },
     private val isVideoTransitionPending: () -> Boolean = { false },
     private val isCasting: () -> Boolean = { false },
     private val sabrPlaybackCache: SabrPlaybackCache = SabrPlaybackCache(),
@@ -1034,6 +1035,7 @@ class ExoPlaybackPlayer(
         resource: PlaybackResource,
         startPlaying: Boolean,
     ) {
+        if (!playbackAllowed()) return
         onPlaybackCommand()
         cancelScreenOffFocusRecovery()
         requestCounter++
@@ -1046,7 +1048,7 @@ class ExoPlaybackPlayer(
                 song = song,
                 resource = resource,
                 resumePlayback = startPlaying,
-                shouldCommit = { requestCounter == token },
+                shouldCommit = { requestCounter == token && playbackAllowed() },
                 onPrepareFailure = { error -> reportPlaybackFailure(error ?: IOException("Media3 audio preparation failed")) },
             )
         }
@@ -1093,6 +1095,7 @@ class ExoPlaybackPlayer(
     }
 
     override fun resume() {
+        if (!playbackAllowed()) return
         onPlaybackCommand()
         cancelScreenOffFocusRecovery()
         logCommand("resume")
@@ -2565,7 +2568,7 @@ class ExoPlaybackPlayer(
                         ?.let(resource::withClientPlaybackNonce)
                         ?: resource
                 }
-            if (!shouldCommit()) {
+            if (!shouldCommit() || !playbackAllowed()) {
                 Timber.tag(MUSIC_VIDEO_TAG).d(
                     "prepare discarded before commit videoId=%s currentInstance=%d recoveryInstance=%s",
                     preparedResource.videoId,
@@ -2675,7 +2678,7 @@ class ExoPlaybackPlayer(
 
             if (
                 !isCurrentPreparedQueueReplacement(
-                    requestIsCurrent = shouldCommit(),
+                    requestIsCurrent = shouldCommit() && playbackAllowed(),
                     playerIsCurrent = exo === previousPlayer,
                     expectedPlaybackInstanceId = previousInstance,
                     currentPlaybackInstanceId = currentInstance,
@@ -2751,7 +2754,7 @@ class ExoPlaybackPlayer(
                                         var catchUpUsed = false
                                         var playoutCheckpoint: AudioPlayoutTracker.Checkpoint? = null
                                         val playoutTracker = checkNotNull(silenceSupport[candidate]).playoutTracker
-                                        while (shouldCommit() && exo === previousPlayer) {
+                                        while (shouldCommit() && playbackAllowed() && exo === previousPlayer) {
                                             val liveTargetPosition = currentTargetPosition()
                                             candidate.playerError?.let {
                                                 return@withTimeoutOrNull MediaPreparationResult.Failed(it)
@@ -2877,7 +2880,7 @@ class ExoPlaybackPlayer(
                 }
 
                 if (
-                    !shouldCommit() ||
+                    !shouldCommit() || !playbackAllowed() ||
                     exo !== previousPlayer ||
                     (
                         recoveryPlaybackInstanceId != null &&
@@ -2984,7 +2987,7 @@ class ExoPlaybackPlayer(
                             } ?: MediaPreparationResult.Failed(IOException("Media3 initial queue replacement preparation timed out"))
                         if (
                             !isCurrentPreparedQueueReplacement(
-                                requestIsCurrent = shouldCommit(),
+                                requestIsCurrent = shouldCommit() && playbackAllowed(),
                                 playerIsCurrent = exo === previousPlayer,
                                 expectedPlaybackInstanceId = previousInstance,
                                 currentPlaybackInstanceId = currentInstance,

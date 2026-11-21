@@ -9,6 +9,7 @@ import android.os.IBinder
 import android.widget.Toast
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.media3.common.Player
+import com.metrolist.android.App
 import com.metrolist.android.R
 import com.metrolist.android.deviceconnect.AndroidDeviceConnect
 import com.metrolist.android.deviceconnect.toDeviceConnectRepeatMode
@@ -381,6 +382,7 @@ class PlayerConnection(
     private var observationScope: CoroutineScope? = null
 
     private fun deferUntilConnected(command: () -> Unit): Boolean {
+        if (!(context.applicationContext as App).hubAccess.isAllowed()) return true
         if (!pendingCommands.defer(command)) return false
         ensureConnected()
         return true
@@ -392,6 +394,7 @@ class PlayerConnection(
     }
 
     fun ensureConnected() {
+        if (!(context.applicationContext as App).hubAccess.isAllowed()) return
         if (bindingRequested) return
         bindingRequested = true
         previewJob?.cancel()
