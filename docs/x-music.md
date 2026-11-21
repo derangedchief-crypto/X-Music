@@ -36,16 +36,64 @@ retained when signing out.
 ## Build and distribution
 
 The Android application ID is `net.extremeiptv.xmusic`, with the launcher label
-`X-Music` (`.debug` / `X-Music Debug` for debug builds). The upstream automatic
-updater is disabled so an upstream APK is not offered as an X-Music update.
+`X-Music` (`.debug` / `X-Music Debug` for debug builds). The Android updater reads
+releases only from the public `derangedchief-crypto/X-Music` repository.
 Original source namespaces and attribution remain intact.
 
-Use the toolchain and build commands in [development.md](development.md). GitHub
-Actions is initially disabled on the X-Music repository because the copied
-workflows rely on upstream custom runners and secrets. Configure X-Music signing,
-build infrastructure and distribution before enabling release workflows. The
-private repository's source must still be made available to recipients as
-required by GPL-3.0 when distributing binaries.
+Use the toolchain and build commands in [development.md](development.md). The
+X-Music GitHub Actions workflow uses standard Ubuntu runners. Inherited upstream
+workflows remain disabled because they require upstream runners and services.
+The public repository supplies corresponding source and retained GPL-3.0 notices.
+
+## GitHub builds and production signing
+
+Run **Actions → Build and publish X-Music → Run workflow** on `main`. Enter
+customer-facing release notes. Leave `publish` off to obtain a signed APK as a
+workflow artifact, or turn it on to publish a stable release that the app checks.
+The workflow verifies Android before building the release APK, then checks its
+package ID, version, signing certificate, non-debuggable flag and absence of the
+Sentry startup provider. It publishes only after GitHub confirms the APK digest.
+An existing release is never overwritten.
+
+Signing uses four repository secrets: `RELEASE_KEYSTORE_BASE64`,
+`RELEASE_KEYSTORE_PASSWORD`, `RELEASE_KEY_ALIAS` and `RELEASE_KEY_PASSWORD`.
+`XMUSIC_SIGNING_SHA256` pins the expected certificate as a repository variable.
+The restored key is kept in the runner's temporary directory and removed after
+the build. Credential-bearing Gradle configuration caches are disabled. Keep an
+independent private backup of the production key and passwords; GitHub secrets
+cannot be downloaded later.
+
+Production uses `net.extremeiptv.xmusic` and its dedicated signing key. The older
+test app uses `net.extremeiptv.xmusic.debug` with a different key, so the first
+production install is separate and does not inherit its local data. Subsequent
+production updates retain the production identity. The app is displayed as
+**X-Music** without a Debug suffix.
+
+## Publishing Android updates
+
+The app checks at process startup and every hour while its main UI is running,
+when automatic checks are enabled in Settings. New versions produce an in-app
+prompt. Downloads stay in app-private cache and Android confirms installation.
+Normal update screens do not expose repository or download URLs. A public URL
+can still be discovered by inspecting the binary or network traffic.
+
+Publish a non-draft, non-prerelease GitHub release tagged `v<version>` with a
+version greater than the installed `VERSION_NAME`, for example `v14.0.2` after
+`14.0.1`. Increase the Android version code as part of that release. Upload the
+APK as `X-Music.apk` or `X-Music-<version>.apk`. Retain the installed application
+ID and production signing key. A production APK cannot update the old debug
+installation in place. The updater validates package identity, signer,
+size and the GitHub asset digest before installation.
+
+Pushing code or uploading an APK under an old version does not trigger a stable
+update. Existing test prereleases are not offered to customers on the stable
+channel. Customers need to install the production APK once manually.
+
+Only plain-text notes between `<!-- xmusic-notes -->` and
+`<!-- /xmusic-notes -->` in a release body appear in the app. URL, GitHub and
+repository-owner lines are excluded. Maintainer notes remain on GitHub.
+License and upstream contributor information is under About → Open-source
+licenses rather than the account-menu footer or startup prompts.
 
 This is an access gate on the shipped client, not a server-side music license or
 tamper-proof DRM. Modified clients can remove a client-side gate.
