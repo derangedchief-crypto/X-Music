@@ -131,11 +131,11 @@ import com.metrolist.shared.generated.resources.updates_size
 import com.metrolist.shared.generated.resources.updates_status_current
 import com.metrolist.shared.generated.resources.updates_title
 import com.metrolist.shared.generated.resources.updates_version
+import com.metrolist.shared.generated.resources.xmusic_update_description
 import com.metrolist.shared.ui.components.RefreshIndicator
 import com.metrolist.shared.ui.icons.MetrolistIcons
 import com.metrolist.shared.ui.settings.LocalSettingsPageHasTopBar
 import com.metrolist.shared.ui.settings.settingsPageSubtitle
-import com.metrolist.shared.ui.update.GitHubMarkdown
 import com.metrolist.shared.ui.update.UpdateInfo
 import com.metrolist.shared.ui.utils.rememberFileSizeFormatter
 import com.metrolist.shared.update.UPDATE_CHANNEL_NIGHTLY
@@ -710,7 +710,7 @@ fun UpdateDetailsScreen(
                         stringResource(if (crashRecovery) Res.string.crash_updates_changelog else Res.string.updates_changelog),
                         style = MaterialTheme.typography.headlineLarge,
                     )
-                    GitHubMarkdown(release.body.orEmpty())
+                    Text(release.customerNotes.ifBlank { stringResource(Res.string.xmusic_update_description) })
                 }
             }
         }

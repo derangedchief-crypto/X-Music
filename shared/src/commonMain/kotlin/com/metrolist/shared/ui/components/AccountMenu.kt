@@ -70,7 +70,6 @@ import com.metrolist.shared.generated.resources.Res
 import com.metrolist.shared.generated.resources.account_login_with_token
 import com.metrolist.shared.generated.resources.account_login_with_token_hint
 import com.metrolist.shared.generated.resources.account_logout_confirm
-import com.metrolist.shared.generated.resources.account_menu_license
 import com.metrolist.shared.generated.resources.account_menu_title
 import com.metrolist.shared.generated.resources.account_sign_in
 import com.metrolist.shared.generated.resources.account_user_icon
@@ -370,12 +369,6 @@ internal fun AccountMenuContent(
                 stringResource(Res.string.account_menu_title, BuildConfig.APP_VERSION),
                 style = MaterialTheme.typography.labelLarge,
                 color = colorScheme.primary,
-                textAlign = TextAlign.Center,
-            )
-            Text(
-                stringResource(Res.string.account_menu_license),
-                style = MaterialTheme.typography.bodySmall,
-                color = colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
             )
         }

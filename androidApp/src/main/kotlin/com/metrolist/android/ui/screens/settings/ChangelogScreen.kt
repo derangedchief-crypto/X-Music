@@ -22,9 +22,7 @@ import com.metrolist.android.update.GitHubRelease
 import com.metrolist.shared.generated.resources.Res
 import com.metrolist.shared.generated.resources.close
 import com.metrolist.shared.generated.resources.updates_release_notes_title
-import com.metrolist.shared.ui.update.GitHubMarkdown
-import com.metrolist.shared.ui.update.rememberReleaseNotesState
-import com.mikepenz.markdown.model.State
+import com.metrolist.shared.generated.resources.xmusic_update_description
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -33,9 +31,6 @@ fun ReleaseNotesSheet(
     release: GitHubRelease,
     onDismiss: () -> Unit,
 ) {
-    val markdownState = rememberReleaseNotesState(release.body.orEmpty())
-    if (markdownState is State.Loading) return
-
     AdaptiveModalBottomSheet(
         onDismissRequest = onDismiss,
         containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -53,7 +48,7 @@ fun ReleaseNotesSheet(
                     fontWeight = FontWeight.Bold,
                 )
             }
-            item { GitHubMarkdown(markdownState) }
+            item { Text(release.customerNotes.ifBlank { stringResource(Res.string.xmusic_update_description) }) }
             item {
                 TextButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth(), shapes = ButtonDefaults.shapes()) {
                     Text(stringResource(Res.string.close))

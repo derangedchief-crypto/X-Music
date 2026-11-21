@@ -633,11 +633,16 @@ fun MetrolistApp(
             // Hourly keeps nightly users current while staying far below GitHub's unauthenticated rate limit.
             while (true) {
                 delay(1.hours)
-                if (Settings.shared.checkForUpdates) AppUpdateManager.checkAtStartup(context, networkEnabled = true)
+                if (Settings.shared.checkForUpdates) {
+                    val available = AppUpdateManager.checkAtStartup(context, networkEnabled = true)
+                    if (available != null && Settings.shared.updatePromptVersion != available.updateKey) {
+                        Settings.shared.updatePromptVersion = available.updateKey
+                        Settings.shared.launchesSinceUpdatePrompt = 0
+                        updatePrompt = available
+                    }
+                }
             }
         }
-
-        SupportPrompt()
 
         PopupContent(updatePrompt) { release ->
             AlertDialog(
@@ -646,16 +651,18 @@ fun MetrolistApp(
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text(stringResource(Res.string.updates_available_message))
-                        Text(
-                            text = stringResource(Res.string.updates_changelog_preview),
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold,
-                        )
-                        Text(
-                            text = release.changelogSnippet(),
-                            style = MaterialTheme.typography.bodyMedium,
-                            maxLines = 7,
-                        )
+                        if (release.customerNotes.isNotBlank()) {
+                            Text(
+                                text = stringResource(Res.string.updates_changelog_preview),
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                            )
+                            Text(
+                                text = release.changelogSnippet(),
+                                style = MaterialTheme.typography.bodyMedium,
+                                maxLines = 7,
+                            )
+                        }
                     }
                 },
                 confirmButton = {
@@ -2212,8 +2219,7 @@ private fun AppTitleWithUpdateWarning(
 
 private fun GitHubRelease.changelogSnippet(): String {
     val lines =
-        body
-            .orEmpty()
+        customerNotes
             .lineSequence()
             .map(String::trim)
             .filter(String::isNotEmpty)

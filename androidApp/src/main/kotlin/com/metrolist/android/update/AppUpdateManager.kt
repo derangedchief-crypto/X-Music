@@ -53,6 +53,18 @@ data class GitHubRelease(
     val assets: List<GitHubReleaseAsset> = emptyList(),
 ) {
     val version: String get() = tagName.removePrefix("v")
+    val customerNotes: String
+        get() =
+            body
+                .orEmpty()
+                .substringAfter("<!-- xmusic-notes -->", "")
+                .substringBefore("<!-- /xmusic-notes -->", "")
+                .lineSequence()
+                .filterNot { line ->
+                    line.contains("://") || line.contains("github", ignoreCase = true) ||
+                        line.contains("derangedchief-crypto", ignoreCase = true)
+                }.joinToString("\n")
+                .trim()
     val isNightly: Boolean get() = tagName == NIGHTLY_TAG && !draft
 
     /** Nightlies share one tag, so their package digest tells them apart. */
@@ -68,7 +80,7 @@ data class GitHubRelease(
                         BLOCKED_APK_MARKERS.none { marker -> asset.name.contains(marker, ignoreCase = true) }
                 }
             val preferredNames =
-                PREFERRED_APK_NAMES + listOf("metrolist-android-$version.apk", "metrolist-android-$version-universal.apk")
+                PREFERRED_APK_NAMES + listOf("X-Music-$version.apk", "X-Music-$version-universal.apk")
             return preferredNames.firstNotNullOfOrNull { preferred ->
                 candidates.singleOrNull { it.name.equals(preferred, ignoreCase = true) }
             }
@@ -119,8 +131,8 @@ enum class UpdateFailure { CHECK, NO_APK, DOWNLOAD, DIGEST, INSTALL }
 
 object AppUpdateManager {
     const val CHANNEL_ID = "updates"
-    private const val RELEASES_URL = "https://api.github.com/repos/MetrolistGroup/Metrolist/releases?per_page=50"
-    private const val NIGHTLY_RELEASE_URL = "https://api.github.com/repos/MetrolistGroup/Metrolist/releases/tags/$NIGHTLY_TAG"
+    private const val RELEASES_URL = "https://api.github.com/repos/derangedchief-crypto/X-Music/releases?per_page=50"
+    private const val NIGHTLY_RELEASE_URL = "https://api.github.com/repos/derangedchief-crypto/X-Music/releases/tags/$NIGHTLY_TAG"
     private const val NOTIFICATION_ID = 1400
     private const val MAX_APK_BYTES = 512L * 1024 * 1024
     private const val MIN_FREE_SPACE_BYTES = 16L * 1024 * 1024
@@ -154,10 +166,7 @@ object AppUpdateManager {
             Settings.shared.cachedUpdateReleasesJson = ""
             Settings.shared.pendingUpdateReleaseJson = ""
         }
-        val now = System.currentTimeMillis()
-        val lastAttempt = Settings.shared.lastUpdateCheckAttemptTimestamp
-        val checkIsDue = lastAttempt !in 1..now || now - lastAttempt >= CHECK_INTERVAL_MILLIS
-        if (networkEnabled && checkIsDue) {
+        if (networkEnabled) {
             return check(context, notify = Settings.shared.updateNotifications)
         }
 
@@ -208,7 +217,7 @@ object AppUpdateManager {
                             .url(RELEASES_URL)
                             .header("Accept", "application/vnd.github+json")
                             .header("X-GitHub-Api-Version", "2022-11-28")
-                            .header("User-Agent", "Metrolist/${BuildConfig.VERSION_NAME}")
+                            .header("User-Agent", "X-Music/${BuildConfig.VERSION_NAME}")
                             .build()
                     val allReleases =
                         client.newCall(request).execute().use { response ->
@@ -225,7 +234,7 @@ object AppUpdateManager {
                     if (!crashRecovery) Settings.shared.lastUpdateCheckTimestamp = now
                     val update =
                         publicReleases.firstOrNull { release ->
-                            (crashRecovery || release.isPublishedStable) &&
+                            release.apk != null && (crashRecovery || release.isPublishedStable) &&
                                 compareVersions(release.version, currentVersion) > 0
                         } ?: allReleases.firstOrNull(GitHubRelease::isNightly)?.takeIf { nightly ->
                             // A crash offers the nightly even on the stable channel, since it may already carry the fix.
@@ -266,7 +275,7 @@ object AppUpdateManager {
                 .url(NIGHTLY_RELEASE_URL)
                 .header("Accept", "application/vnd.github+json")
                 .header("X-GitHub-Api-Version", "2022-11-28")
-                .header("User-Agent", "Metrolist/${BuildConfig.VERSION_NAME}")
+                .header("User-Agent", "X-Music/${BuildConfig.VERSION_NAME}")
                 .build()
         return client
             .newCall(request)
@@ -301,13 +310,13 @@ object AppUpdateManager {
                 check(asset.size in 1..MAX_APK_BYTES) { "Invalid update size" }
                 val updateDir = File(context.cacheDir, "updates").apply { mkdirs() }
                 updateDir.listFiles()?.forEach(File::delete)
-                val partial = File(updateDir, "Metrolist-${release.version}.apk.part")
-                val output = File(updateDir, "Metrolist-${release.version}.apk")
+                val partial = File(updateDir, "X-Music-${release.version}.apk.part")
+                val output = File(updateDir, "X-Music-${release.version}.apk")
                 val request =
                     Request
                         .Builder()
                         .url(asset.downloadUrl)
-                        .header("User-Agent", "Metrolist/${BuildConfig.VERSION_NAME}")
+                        .header("User-Agent", "X-Music/${BuildConfig.VERSION_NAME}")
                         .build()
                 var downloaded = 0L
                 val call = client.newCall(request).also { activeDownload = it }
@@ -593,13 +602,11 @@ object AppUpdateManager {
     }
 }
 
-private const val CHECK_INTERVAL_MILLIS = 60 * 60 * 1_000L
-private const val CACHE_SOURCE = "github-releases-metrolist-v1"
+private const val CACHE_SOURCE = "github-releases-xmusic-v1"
 private val PREFERRED_APK_NAMES =
     listOf(
-        "Metrolist.apk",
-        "Metrolist-Android-release.apk",
-        "androidApp-release.apk",
-        "nightly-Metrolist-Android-release.apk",
+        "X-Music.apk",
+        "X-Music-Android-release.apk",
+        "nightly-X-Music.apk",
     )
 private val BLOCKED_APK_MARKERS = listOf("debug", "unsigned", "unaligned", "test", "benchmark")

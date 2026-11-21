@@ -7,6 +7,8 @@
 
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="xmusic_name" translatable="false">X-Music</string>
+    <string name="xmusic_open_source">Open-source licenses</string>
+    <string name="xmusic_update_description">A new version of X-Music is available. Download it here, then confirm installation when Android asks.</string>
     <string name="xmusic_access_intro">Enter your six-digit Activation Code to start listening. An active subscription is required.</string>
     <string name="xmusic_access_code">Activation Code</string>
     <string name="xmusic_access_checking">Checking your subscription…</string>

@@ -41,6 +41,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -84,6 +85,7 @@ import com.metrolist.shared.generated.resources.devmode_already_active
 import com.metrolist.shared.generated.resources.devtools_enabled
 import com.metrolist.shared.generated.resources.play
 import com.metrolist.shared.generated.resources.stands_with_palestine
+import com.metrolist.shared.generated.resources.xmusic_open_source
 import com.metrolist.shared.settings.Settings
 import com.metrolist.shared.ui.components.images.AsyncImage
 import com.metrolist.shared.ui.icons.MetrolistIcons
@@ -210,59 +212,65 @@ fun AboutScreen(
                 onLogoClick = ::handleLogoClick,
             )
 
-            CommunitySection(
-                text = text,
-                onOpenLink = openCommunityLink,
-            )
+            var showOpenSource by rememberSaveable { mutableStateOf(false) }
+            TextButton(onClick = { showOpenSource = !showOpenSource }) {
+                Text(stringResource(Res.string.xmusic_open_source))
+            }
+            if (showOpenSource) {
+                CommunitySection(
+                    text = text,
+                    onOpenLink = openCommunityLink,
+                )
 
-            CollaboratorsList(
-                contributors = listOf(AboutContributors.lead),
-                text = text,
-                title = text.creatorSection,
-                avatarSize = 64.dp,
-                colorScheme = colorScheme,
-                onContributorClick = { selectedContributor = it },
-                onContributorLongClick = onContributorLongClick,
-            )
+                CollaboratorsList(
+                    contributors = listOf(AboutContributors.lead),
+                    text = text,
+                    title = text.creatorSection,
+                    avatarSize = 64.dp,
+                    colorScheme = colorScheme,
+                    onContributorClick = { selectedContributor = it },
+                    onContributorLongClick = onContributorLongClick,
+                )
 
-            CollaboratorsList(
-                contributors = AboutContributors.leads,
-                text = text,
-                title = text.leadsSection,
-                avatarSize = 64.dp,
-                colorScheme = colorScheme,
-                onContributorClick = { selectedContributor = it },
-                onContributorLongClick = onContributorLongClick,
-            )
+                CollaboratorsList(
+                    contributors = AboutContributors.leads,
+                    text = text,
+                    title = text.leadsSection,
+                    avatarSize = 64.dp,
+                    colorScheme = colorScheme,
+                    onContributorClick = { selectedContributor = it },
+                    onContributorLongClick = onContributorLongClick,
+                )
 
-            CollaboratorsList(
-                contributors = AboutContributors.collaborators,
-                text = text,
-                colorScheme = colorScheme,
-                onContributorClick = { selectedContributor = it },
-                onContributorLongClick = onContributorLongClick,
-            )
+                CollaboratorsList(
+                    contributors = AboutContributors.collaborators,
+                    text = text,
+                    colorScheme = colorScheme,
+                    onContributorClick = { selectedContributor = it },
+                    onContributorLongClick = onContributorLongClick,
+                )
 
-            Text(
-                text = text.licenseDescription,
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center,
-                color = colorScheme.onSurfaceVariant,
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .clip(MaterialTheme.shapes.medium)
-                        .clickable(role = Role.Button, onClickLabel = text.license) { openCommunityLink(aboutLicenseLink) }
-                        .padding(16.dp),
-            )
+                Text(
+                    text = text.licenseDescription,
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
+                    color = colorScheme.onSurfaceVariant,
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .clip(MaterialTheme.shapes.medium)
+                            .clickable(role = Role.Button, onClickLabel = text.license) { openCommunityLink(aboutLicenseLink) }
+                            .padding(16.dp),
+                )
 
-            Text(
-                text = stringResource(Res.string.stands_with_palestine),
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                color = colorScheme.onSurfaceVariant,
-            )
+                Text(
+                    text = stringResource(Res.string.stands_with_palestine),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    color = colorScheme.onSurfaceVariant,
+                )
+            }
         }
     }
 
