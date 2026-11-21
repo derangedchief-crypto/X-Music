@@ -22,21 +22,16 @@ def version():
     return match.group(1)
 
 
-def release_exists(tag):
-    result = subprocess.run(
-        ["gh", "api", f"repos/{os.environ['GITHUB_REPOSITORY']}/releases/tags/{tag}"],
-        capture_output=True, text=True,
-    )
-    if result.returncode == 0:
-        return True
-    if "HTTP 404" not in result.stderr:
-        raise SystemExit("Could not verify whether the release exists")
-    return False
+def find_release(tag):
+    # The tag endpoint does not resolve an unpublished draft's uncreated tag.
+    pages = json.loads(run("gh", "api", "--paginate", "--slurp",
+                          f"repos/{os.environ['GITHUB_REPOSITORY']}/releases?per_page=100"))
+    return next((release for page in pages for release in page if release["tag_name"] == tag), None)
 
 
 def prepare():
     tag = "v" + version()
-    if os.environ["PUBLISH"] == "true" and release_exists(tag):
+    if os.environ["PUBLISH"] == "true" and find_release(tag):
         raise SystemExit("This version is already published. Increase appVersion and versionCode.")
     notes = os.environ["RELEASE_NOTES"].strip()
     if not notes or any(word in notes.lower() for word in ("://", "github", "derangedchief-crypto", "<!--")):
@@ -82,17 +77,20 @@ def verify():
 
 def publish():
     tag = "v" + version()
-    if release_exists(tag):
-        raise SystemExit("Refusing to replace an existing release")
     repo = os.environ["GITHUB_REPOSITORY"]
-    run("gh", "release", "create", tag, "dist/X-Music.apk", "dist/SHA256SUMS", "dist/build-info.json",
-        "--repo", repo, "--target", os.environ["GITHUB_SHA"], "--draft", "--title", f"X-Music {version()}",
-        "--notes-file", "dist/release-notes.md")
-    release = json.loads(run("gh", "api", f"repos/{repo}/releases/tags/{tag}"))
-    apk, = [asset for asset in release["assets"] if asset["name"] == "X-Music.apk"]
-    expected = "sha256:" + hashlib.sha256(Path("dist/X-Music.apk").read_bytes()).hexdigest()
-    if apk["state"] != "uploaded" or apk.get("digest") != expected:
-        raise SystemExit("Uploaded APK digest is not verified; release remains a draft")
+    release = find_release(tag)
+    if release is None:
+        run("gh", "release", "create", tag, "dist/X-Music.apk", "dist/SHA256SUMS", "dist/build-info.json",
+            "--repo", repo, "--target", os.environ["GITHUB_SHA"], "--draft", "--title", f"X-Music {version()}",
+            "--notes-file", "dist/release-notes.md")
+        release = find_release(tag)
+    if not release or not release["draft"] or release["target_commitish"] != os.environ["GITHUB_SHA"]:
+        raise SystemExit("Refusing to modify a published release or a draft from different source")
+    for name in ("X-Music.apk", "SHA256SUMS", "build-info.json"):
+        asset, = [asset for asset in release["assets"] if asset["name"] == name]
+        expected = "sha256:" + hashlib.sha256(Path("dist", name).read_bytes()).hexdigest()
+        if asset["state"] != "uploaded" or asset.get("digest") != expected:
+            raise SystemExit("Uploaded asset digest is not verified; release remains a draft")
     run("gh", "release", "edit", tag, "--repo", repo, "--draft=false", "--latest")
 
 
