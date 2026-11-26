@@ -409,7 +409,8 @@ class MusicService :
     override fun onCreate() {
         super.onCreate()
         if (!(application as App).infrastructureReady || !(application as App).hubAccess.isAllowed()) {
-            stopSelf()
+            // onStartCommand must acknowledge a pending foreground start before rejecting it.
+            // Bind-only clients receive a null binding and release the service normally.
             return
         }
         isRunning = true

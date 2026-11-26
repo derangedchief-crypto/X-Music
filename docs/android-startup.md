@@ -28,6 +28,14 @@ Read Listen Together guest-lock state without constructing its network manager. 
 
 Media3's [manifest media-button receiver](https://github.com/androidx/media/blob/1.12.0-beta01/libraries/session/src/main/java/androidx/media3/session/MediaButtonReceiver.java) and [paused-play notification actions](https://github.com/androidx/media/blob/1.12.0-beta01/libraries/session/src/main/java/androidx/media3/session/DefaultActionFactory.java) start `MusicService` as a foreground service. Acknowledge these intents before dispatching their commands or waiting for queue restoration, including repeated starts and rejected startup. Media3's actionless self-start intents need the same acknowledgement. Reuse the current media notification when available, otherwise show a temporary app notification with the same ID. After ten seconds, let Media3 reconcile empty, idle or paused media-button requests and late idle self-starts. A prepared self-start keeps Media3's existing foreground lifetime.
 
+When infrastructure or X-Music subscription access is unavailable, `onCreate`
+leaves the player uninitialized without stopping the service. `onStartCommand`
+first acknowledges a foreground start, then removes the temporary notification
+and stops the rejected request. Stopping in `onCreate` can race with the pending
+foreground start and leave Android's promotion deadline unsatisfied. Bind-only
+requests receive a null binding; `PlayerConnection` releases it. This does not
+grant playback access while subscription verification is pending or expired.
+
 Widget refreshes and Android Auto library refreshes use ordinary service starts. Widget playback binds through `PlayerConnection`; Android Auto and other controllers bind through Media3. There is no boot playback receiver. Keep these paths free of foreground-service starts until playback requires one. Preserve widget resume promotion before its playback command and the idle-notification suppression for browsing and restored queues.
 
 Keep playback ownership in the service. Screen, activity and rendering visibility must not stop audio. Use the common player factory so primary, preloaded and replacement players retain noisy-audio handling.
