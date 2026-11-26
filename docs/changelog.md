@@ -1,3 +1,7 @@
+---v14.0.2
+# X-Music playback service startup
+Defer rejected playback-service shutdown until Android's foreground start request is acknowledged. Subscription verification still gates playback. This addresses a startup-timeout path after background or idle restarts; confirmation on the affected Samsung device is pending.
+
 ---v14.0.1
 # Fixes after 14.0.0
 Metrolist 14.0.1 fixes upgrades from 13.x, playback and desktop stability, and brings back several 13.x features.

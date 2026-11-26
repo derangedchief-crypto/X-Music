@@ -1,0 +1,1 @@
+X-Music now acknowledges foreground playback-service starts before stopping requests whose subscription access is not verified. This addresses a background startup-timeout path without changing subscription requirements.
